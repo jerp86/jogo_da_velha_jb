@@ -67,16 +67,24 @@ function App() {
 
   return (
     <div className="container">
-      {winner && <h1>{winner} ganhou</h1>}
+      {winner && (
+        <h1>
+          <strong className={winner}>{winner}</strong> ganhou
+        </h1>
+      )}
       {draw && <h1>Empate</h1>}
       {gameOver && (
         <button type="button" onClick={reset}>
           Jogar novamente
         </button>
       )}
-      {!gameOver && <p>É a vez de {turn}</p>}
+      {!gameOver && (
+        <p>
+          É a vez de <strong className={turn}>{turn}</strong>
+        </p>
+      )}
 
-      <div className={`board ${gameOver && "gameOver"}`}>
+      <div className={`board ${gameOver ? "gameOver" : ""}`}>
         {getSquares().map((_, i) => (
           <div
             className={`cell ${getCellPlayer(i)}`}
