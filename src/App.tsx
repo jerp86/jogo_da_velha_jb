@@ -1,45 +1,94 @@
-import { useState } from 'react'
-import logo from './logo.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import "./App.css";
+
+type Players = "O" | "X";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [turn, setTurn] = useState<Players>("O");
+  const [winner, setWinner] = useState<Players | null>(null);
+  const [draw, setDraw] = useState<boolean | null>(null);
+  const [marks, setMarks] = useState<{ [key: string]: Players }>({});
+
+  const gameOver = !!winner || !!draw;
+
+  const getSquares = () => {
+    return new Array(9).fill(true);
+  };
+
+  const play = (index: number) => {
+    if (marks[index] || gameOver) return;
+
+    setMarks((prev) => ({ ...prev, [index]: turn }));
+    setTurn((prev) => (prev === "O" ? "X" : "O"));
+  };
+
+  const getCellPlayer = (index: number) => {
+    if (!marks[index]) return;
+
+    return marks[index];
+  };
+
+  const getWinner = () => {
+    const victoryLines = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+
+    for (const line of victoryLines) {
+      const [a, b, c] = line;
+
+      if (marks[a] && marks[a] === marks[b] && marks[a] === marks[c]) {
+        return marks[a];
+      }
+    }
+  };
+
+  const reset = () => {
+    setMarks({});
+    setWinner(null);
+    setDraw(null);
+  };
+
+  useEffect(() => {
+    const champ = getWinner();
+
+    if (champ) return setWinner(champ);
+
+    if (Object.keys(marks).length === 9) setDraw(true);
+  }, [marks]);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Hello Vite + React!</p>
-        <p>
-          <button type="button" onClick={() => setCount((count) => count + 1)}>
-            count is: {count}
-          </button>
-        </p>
-        <p>
-          Edit <code>App.tsx</code> and save to test HMR updates.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="container">
+      {winner && <h1>{winner} ganhou</h1>}
+      {draw && <h1>Empate</h1>}
+      {gameOver && (
+        <button type="button" onClick={reset}>
+          Jogar novamente
+        </button>
+      )}
+      {!gameOver && <p>É a vez de {turn}</p>}
+
+      <div className={`board ${gameOver && "gameOver"}`}>
+        {getSquares().map((_, i) => (
+          <div
+            className={`cell ${getCellPlayer(i)}`}
+            key={i}
+            onClick={() => play(i)}
           >
-            Learn React
-          </a>
-          {' | '}
-          <a
-            className="App-link"
-            href="https://vitejs.dev/guide/features.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Vite Docs
-          </a>
-        </p>
-      </header>
+            {marks[i]}
+          </div>
+        ))}
+      </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
